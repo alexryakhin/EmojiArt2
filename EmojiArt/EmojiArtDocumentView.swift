@@ -13,24 +13,12 @@ struct EmojiArtDocumentView: View {
     @State private var selectedEmojis = Set<EmojiArtModel.Emoji>()
     
     var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
+        VStack(spacing: 0) {
+            ZStack {
                 documentBody
-                    .ignoresSafeArea(.all, edges: [.top])
-            }.toolbar {
-                ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    Button {
-                        document.removeEmoji(selectedEmojis)
-                        selectedEmojis.removeAll()
-                    } label: {
-                        Text("delete")
-                    }
-                }
-                
-                ToolbarItemGroup(placement: .bottomBar) {
-                    palette
-                }
+                buttons
             }
+            palette
         }
     }
     
@@ -195,6 +183,23 @@ struct EmojiArtDocumentView: View {
     var palette: some View {
         ScrollingEmojisView(emojis: emojisTest)
             .font(.system(size: defaultFontSize))
+    }
+    
+    var buttons: some View {
+        VStack {
+            HStack {
+                Spacer()
+                if !selectedEmojis.isEmpty {
+                    Button {
+                        document.removeEmoji(selectedEmojis)
+                        selectedEmojis.removeAll()
+                    } label: {
+                        Text("delete").padding()
+                    }
+                }
+            }
+            Spacer()
+        }
     }
     
     let emojisTest = "🧞🧞‍♂️🧜‍♀️🧜👁💪🏻👍🏻👽🎃💩👻💀🦾🦂🦀🐠🦖🦋🐌🐊🦒🕊🦢🦜🐕🐁🐚🌈☄️✨⚽️🎼🎺🎻🎸✈️🚀🛳"
