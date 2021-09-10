@@ -13,9 +13,24 @@ struct EmojiArtDocumentView: View {
     @State private var selectedEmojis = Set<EmojiArtModel.Emoji>()
     
     var body: some View {
-        VStack(spacing: 0) {
-            documentBody
-            palette
+        NavigationView {
+            VStack(spacing: 0) {
+                documentBody
+                    .ignoresSafeArea(.all, edges: [.top])
+            }.toolbar {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
+                    Button {
+                        document.removeEmoji(selectedEmojis)
+                        selectedEmojis.removeAll()
+                    } label: {
+                        Text("delete")
+                    }
+                }
+                
+                ToolbarItemGroup(placement: .bottomBar) {
+                    palette
+                }
+            }
         }
     }
     
@@ -33,10 +48,14 @@ struct EmojiArtDocumentView: View {
                 }
                 ForEach(document.emojis) { emoji in
                     Text(emoji.text)
+                        .padding(6)
+                        .overlay(
+                            Circle().stroke(lineWidth: selectedEmojis.contains(emoji) ? 1 : 0)
+                        )
                         .font(.system(size: fontSize(for: emoji)))
                         .scaleEffect(zoomScale)
                         .position(position(for: emoji, in: geometry))
-                        .shadow(color: .purple.opacity(selectedEmojis.contains(emoji) ? 1 : 0), radius: 20, x: 0, y: 0)
+                        .shadow(color: .purple.opacity(selectedEmojis.contains(emoji) ? 1 : 0), radius: 5, x: 0, y: 0)
                         .gesture(tapToSelect(emoji))
                 }
             }
@@ -44,7 +63,7 @@ struct EmojiArtDocumentView: View {
             .onDrop(of: [.plainText, .url, .image], isTargeted: nil) { providers, location in
                 return drop(providers: providers, at: location, in: geometry)
             }
-            .gesture(panGesture().simultaneously(with: zoomGesture())) //never put two gestures on the same view
+            .gesture(panGesture().simultaneously(with: zoomGesture().exclusively(before: tapToDeselect()))) //never put two gestures on the same view
         }
     }
     
@@ -118,7 +137,7 @@ struct EmojiArtDocumentView: View {
             }
     }
     
-    //drag gesture
+    //zoom gesture
     @State private var steadyStateZoomScale: CGFloat = 1
     @GestureState private var gestureZoomScale: CGFloat = 1
     
@@ -155,9 +174,16 @@ struct EmojiArtDocumentView: View {
             }
     }
     
+    private func tapToDeselect() -> some Gesture {
+        TapGesture(count: 1)
+            .onEnded { _ in
+                selectedEmojis.removeAll()
+            }
+    }
+    
     private func tapToSelect(_ emoji: EmojiArtModel.Emoji) -> some Gesture {
         TapGesture(count: 1)
-            .onEnded { value in
+            .onEnded { _ in
                 if !selectedEmojis.contains(emoji) {
                     selectedEmojis.insert(emoji)
                 } else {

@@ -39,6 +39,16 @@ struct EmojiArtModel {
         
     }
     
+    mutating func removeEmoji(_ selectedEmojis: Set<Emoji>) {
+        for emoji in emojis {
+            for selectedEmoji in selectedEmojis {
+                if emoji == selectedEmoji {
+                    emojis.remove(emoji)
+                }
+            }
+        }
+    }
+    
     
     
 }
